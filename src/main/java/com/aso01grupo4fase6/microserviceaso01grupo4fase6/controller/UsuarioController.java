@@ -13,10 +13,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.HttpClientErrorException;
 
 import com.aso01grupo4fase6.microserviceaso01grupo4fase6.model.Usuario;
 import com.aso01grupo4fase6.microserviceaso01grupo4fase6.service.UsuarioService;
 
+import Util.Utils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 
@@ -41,9 +43,16 @@ public class UsuarioController {
 	@ApiOperation(value = "Inserir um novo usuário")
 	@ResponseBody
 	@PostMapping()
-	public ResponseEntity inserirUsuario(@RequestBody Usuario usuario) {
-		Usuario usuarioRetorno = usuarioService.inserirUsuario(usuario);
-		return new ResponseEntity<>(usuarioRetorno, HttpStatus.CREATED);
+	public ResponseEntity inserirUsuario(@RequestBody Usuario usuario) throws Exception {
+		try {
+			Usuario usuarioRetorno = usuarioService.inserirUsuario(usuario);			
+			return usuarioRetorno.getSituacaoCPF().getCodigo().equals(Utils.REGULAR)
+					? new ResponseEntity<>(usuarioRetorno, HttpStatus.CREATED)
+					: new ResponseEntity<>(Utils.MSG_CPF_COM_PROBLEMA + usuarioRetorno.getSituacaoCPF().getDescricao(), HttpStatus.UNPROCESSABLE_ENTITY);
+		} catch (HttpClientErrorException e) {
+			return new ResponseEntity<>(e.getMessage(), HttpStatus.valueOf(e.getRawStatusCode()));
+		}
+
 	}
 
 	@ApiOperation(value = "Buscar usuário")
@@ -51,12 +60,8 @@ public class UsuarioController {
 	@GetMapping("/id/{id}")
 	public ResponseEntity<Usuario> buscarUsuario(@PathVariable("id") Long id) {
 		Optional<Usuario> usuario = usuarioService.buscarUsuario(id);
-
-		if (usuario.isPresent()) {
-			return new ResponseEntity<>(usuario.get(), HttpStatus.OK);
-		} else {
-			return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-		}
+		return usuario.isPresent() ? new ResponseEntity<>(usuario.get(), HttpStatus.OK)
+				: new ResponseEntity<>(HttpStatus.NO_CONTENT);
 
 	}
 
