@@ -36,9 +36,11 @@ public class UsuarioService {
 
 		ObjetoValidaCPF cpfValidado = verificarCPFValido(usuario);
 		usuario.setSituacaoCPF(cpfValidado.getSituacao());
-		if (cpfValidado.getSituacao().getCodigo().equals(Utils.REGULAR)) {
+		if (cpfValidado.getSituacao().getCodigo()==Utils.REGULAR) {
 			enderecoRepository.save(usuario.getEndereco());
-			return usuarioRepository.save(usuario);
+			Usuario usuarioRetorno = usuarioRepository.save(usuario);
+			usuarioRetorno.setSituacaoCPF(cpfValidado.getSituacao());
+			return usuarioRetorno; 
 		}
 		return usuario;
 	}

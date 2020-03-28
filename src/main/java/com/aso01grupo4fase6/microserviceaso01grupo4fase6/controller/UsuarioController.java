@@ -46,7 +46,7 @@ public class UsuarioController {
 	public ResponseEntity inserirUsuario(@RequestBody Usuario usuario) throws Exception {
 		try {
 			Usuario usuarioRetorno = usuarioService.inserirUsuario(usuario);			
-			return usuarioRetorno.getSituacaoCPF().getCodigo().equals(Utils.REGULAR)
+			return usuarioRetorno.getSituacaoCPF().getCodigo()==Utils.REGULAR
 					? new ResponseEntity<>(usuarioRetorno, HttpStatus.CREATED)
 					: new ResponseEntity<>(Utils.MSG_CPF_COM_PROBLEMA + usuarioRetorno.getSituacaoCPF().getDescricao(), HttpStatus.UNPROCESSABLE_ENTITY);
 		} catch (HttpClientErrorException e) {
